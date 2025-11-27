@@ -2,14 +2,16 @@
 
 This is my collection of dotfiles, there are many dotfiles like them - but these are my own.
 
-## Use this repo with stow
+## Use dotfiles with stow
 
 ```sh
-# Arch (btw)
+# Install stow - Arch (btw)
 sudo pacman -S stow
 
 cd ~
-git clone https://github.com/grant-sobkowski/dotfiles.git
-stow nvim # Create config symlink
+git clone https://github.com/grant-sobkowski/dotfiles.git && cd dotfiles
+
+stow nvim
+stow bash
 ```
 
