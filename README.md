@@ -15,3 +15,5 @@ stow nvim
 stow bash
 ```
 
+Note: the above setup only works if you clone the repo from HOME.
+
