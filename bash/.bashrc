@@ -28,3 +28,11 @@ alias vim=nvim
 export EDITOR="nvim"
 export VISUAL="nvim"
 export PAGER="less"
+
+# add go cli tools to PATH
+export GOPATH=$HOME/go
+export PATH="$GOPATH/bin:$PATH"
+export PATH="$HOME/.local/bin:$PATH"
+
+# claude auth stuff
+source ~/.claude.sh
