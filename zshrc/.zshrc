@@ -2,7 +2,6 @@ export PATH=$HOME/bin:$HOME/.local/bin:/usr/local/bin:$PATH
 export EDITOR=nvim
 
 eval "$(atuin init zsh)"
-. "$HOME/.atuin/bin/env"
 
 # Shell wrapper which allows you to change workdir when exiting yazi.
 # Use y instead of yazi to start, then press q to quit.
@@ -15,4 +14,4 @@ function y() {
 	rm -f -- "$tmp"
 }
 
-
+source ~/.jfrog.sh
