@@ -685,6 +685,61 @@ require("lazy").setup({
 		opts = { signs = false },
 	},
 
+	-- LLM support
+	{
+		"blob42/codegpt-ng.nvim",
+		dependencies = {
+			"nvim-lua/plenary.nvim",
+			"MunifTanjim/nui.nvim",
+		},
+		config = function()
+			local bedrock = require("bedrock_provider")
+
+			-- Register custom provider
+			local providers = require("codegpt.providers")
+			providers.available.bedrock = bedrock
+
+			-- Override get_provider to return our custom provider
+			local original_get_provider = providers.get_provider
+			providers.get_provider = function()
+				local Config = require("codegpt.config")
+				local provider = vim.fn.tolower(Config.opts.connection.api_provider or "bedrock")
+				if provider == "bedrock" then
+					return bedrock
+				end
+				return original_get_provider()
+			end
+
+			require("codegpt").setup({
+				connection = {
+					api_provider = "bedrock",
+				},
+				models = {
+					default = "claude-sonnet",
+					bedrock = {
+						default = "claude-sonnet",
+						["claude-sonnet"] = {
+							max_tokens = 4096,
+							temperature = 0.7,
+						},
+					},
+				},
+				hooks = {
+					request_started = function()
+						vim.g.claude_status = "🤖 Thinking..."
+						vim.cmd("redrawstatus")
+						vim.notify("Claude is thinking...", vim.log.levels.INFO, { title = "🤖 CodeGPT" })
+					end,
+					request_finished = function()
+						vim.g.claude_status = ""
+						vim.cmd("redrawstatus")
+						vim.notify("Done!", vim.log.levels.INFO, { title = "✅ CodeGPT", timeout = 2000 })
+					end,
+				},
+			})
+		end,
+	},
+
 	-- Comment boxes plugin
 	-- :CB(pos)(justify)(type)
 	-- :CB(l/c/r)(l/c/r/a)(box|line)
