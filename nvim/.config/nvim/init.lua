@@ -156,6 +156,58 @@ rtp:prepend(lazypath)
 require("lazy").setup({
 	"NMAC427/guess-indent.nvim", -- Detect tabstop and shiftwidth automatically
 
+	-- Dashboard
+	{
+		"leo-alvarenga/homecoming.nvim",
+		branch = "nightly",
+		opts = {
+			section_anchor = "header_half",
+			sections = {
+				{
+					title = "> Files",
+					items = {
+						{
+							action = "Telescope find_files",
+							label = "Find files",
+						},
+						{
+							action = "Telescope live_grep",
+							label = "Live grep",
+						},
+					},
+				},
+				{
+					title = ">  Config",
+					items = {
+						{
+							action = "e $MYVIMRC",
+							label = "Edit config",
+						},
+					},
+				},
+				{
+					title = "> Plugins and LSPs",
+					items = {
+						{ action = "Lazy", label = "Manage plugins" },
+						{
+							action = "Mason",
+							label = "Manage LSPs and tools",
+						},
+					},
+				},
+				{
+					title = ">  Exit",
+					items = {
+						{ action = "qa", label = "Quit Neovim" },
+					},
+				},
+			},
+			header = function()
+				return { "📁 " .. vim.fn.getcwd() }
+			end,
+		},
+	},
+
 	{ -- Adds git related signs to the gutter, as well as utilities for managing changes
 		"lewis6991/gitsigns.nvim",
 		opts = {
@@ -241,6 +293,7 @@ require("lazy").setup({
 				end,
 			},
 			{ "nvim-telescope/telescope-ui-select.nvim" },
+			{ "nvim-telescope/telescope-file-browser.nvim" },
 
 			-- Useful for getting pretty icons, but requires a Nerd Font.
 			{ "nvim-tree/nvim-web-devicons", enabled = vim.g.have_nerd_font },
@@ -268,12 +321,17 @@ require("lazy").setup({
 					["ui-select"] = {
 						require("telescope.themes").get_dropdown(),
 					},
+					file_browser = {
+						theme = "ivy",
+						hijack_netrw = true,
+					},
 				},
 			})
 
 			-- Enable Telescope extensions if they are installed
 			pcall(require("telescope").load_extension, "fzf")
 			pcall(require("telescope").load_extension, "ui-select")
+			pcall(require("telescope").load_extension, "file_browser")
 
 			-- See `:help telescope.builtin`
 			local builtin = require("telescope.builtin")
@@ -683,6 +741,27 @@ require("lazy").setup({
 		event = "VimEnter",
 		dependencies = { "nvim-lua/plenary.nvim" },
 		opts = { signs = false },
+	},
+
+	-- Markdown preview with peek
+	-- Prerequisites:
+	--   1. Install deno: curl -fsSL https://deno.land/x/install/install.sh | sh
+	--   2. Add to ~/.zshrc:
+	--      export DENO_INSTALL="$HOME/.deno"
+	--      export PATH="$DENO_INSTALL/bin:$PATH"
+	--   3. After installing plugin, run: :Lazy build peek.nvim
+	{
+		"toppair/peek.nvim",
+		event = { "VeryLazy" },
+		build = "deno task --quiet build:fast",
+		config = function()
+			require("peek").setup({
+				app = "browser", -- or 'webview', 'browser'
+				theme = "dark",
+			})
+			vim.api.nvim_create_user_command("PeekOpen", require("peek").open, {})
+			vim.api.nvim_create_user_command("PeekClose", require("peek").close, {})
+		end,
 	},
 
 	-- LLM support
