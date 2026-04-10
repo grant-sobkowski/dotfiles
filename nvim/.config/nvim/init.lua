@@ -25,6 +25,22 @@ vim.schedule(function()
 	vim.o.clipboard = "unnamedplus"
 end)
 
+-- WSL: Force use of win32yank.exe for clipboard
+if vim.fn.has("wsl") == 1 then
+	vim.g.clipboard = {
+		name = "win32yank-wsl",
+		copy = {
+			["+"] = "win32yank.exe -i --crlf",
+			["*"] = "win32yank.exe -i --crlf",
+		},
+		paste = {
+			["+"] = "win32yank.exe -o --lf",
+			["*"] = "win32yank.exe -o --lf",
+		},
+		cache_enabled = 0,
+	}
+end
+
 -- Enable break indent
 vim.o.breakindent = true
 
@@ -66,11 +82,11 @@ vim.o.scrolloff = 10
 -- See `:help 'confirm'`
 vim.o.confirm = true
 
--- CUSTOM CONFIGS
-
+-- CUSTOM CONFIGS --
 vim.o.tabstop = 4
 vim.o.shiftwidth = 4
 vim.o.expandtab = true
+vim.cmd("colorscheme retrobox")
 
 -- [[ Basic Keymaps ]]
 --  See `:help vim.keymap.set()`
@@ -486,8 +502,10 @@ require("lazy").setup({
 							completion = {
 								callSnippet = "Replace",
 							},
-							-- You can toggle below to ignore Lua_LS's noisy `missing-fields` warnings
-							-- diagnostics = { disable = { 'missing-fields' } },
+							diagnostics = {
+								globals = { "vim" },
+								-- disable = { 'missing-fields' },
+							},
 						},
 					},
 				},
