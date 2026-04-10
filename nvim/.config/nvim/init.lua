@@ -659,18 +659,6 @@ require("lazy").setup({
 		},
 	},
 
-	{
-		"Tsuzat/NeoSolarized.nvim",
-		lazy = false, -- make sure we load this during startup if it is your main colorscheme
-		priority = 1000, -- make sure to load this before all the other start plugins
-		opts = {
-			style = "light",
-		},
-		config = function()
-			vim.cmd([[ colorscheme NeoSolarized ]])
-		end,
-	},
-
 	-- Highlight todo, notes, etc in comments
 	{
 		"folke/todo-comments.nvim",
@@ -779,24 +767,6 @@ require("lazy").setup({
 	--
 	--  Uncomment the following line and add your plugins to `lua/custom/plugins/*.lua` to get going.
 	-- { import = 'custom.plugins' },
-	{
-		"mikavilpas/yazi.nvim",
-		event = "VeryLazy",
-		keys = {
-			-- 👇 this keymap opens yazi
-			{
-				"<leader>y",
-				function()
-					require("yazi").yazi()
-				end,
-				desc = "Open the file manager",
-			},
-		},
-		opts = {
-			-- 👇 enables yazi to open instead of netrw
-			open_for_directories = true,
-		},
-	},
 }, {
 	ui = {
 		-- If you are using a Nerd Font: set icons to an empty table which will use the
