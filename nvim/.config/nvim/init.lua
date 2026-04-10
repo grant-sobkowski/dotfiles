@@ -19,10 +19,9 @@ vim.o.mouse = "a"
 -- Don't show the mode, since it's already in the status line
 vim.o.showmode = false
 
--- Sync clipboard between OS and Neovim.
---  See `:help 'clipboard'`
+-- Don't sync clipboard automatically - only explicit yanks with 'y' will copy to system clipboard
 vim.schedule(function()
-	vim.o.clipboard = "unnamedplus"
+	vim.o.clipboard = ""
 end)
 
 -- WSL: Force use of win32yank.exe for clipboard
@@ -120,10 +119,21 @@ vim.keymap.set("n", "<C-k>", "<C-w><C-k>", { desc = "Move focus to the upper win
 -- vim.keymap.set("n", "<C-S-j>", "<C-w>J", { desc = "Move window to the lower" })
 -- vim.keymap.set("n", "<C-S-k>", "<C-w>K", { desc = "Move window to the upper" })
 
+-- Delete operations use black hole register (don't copy anywhere)
+vim.keymap.set({ "n", "v" }, "d", '"_d', { desc = "Delete without copying" })
+vim.keymap.set({ "n", "v" }, "D", '"_D', { desc = "Delete to end of line without copying" })
+vim.keymap.set("n", "dd", '"_dd', { desc = "Delete line without copying" })
+vim.keymap.set({ "n", "v" }, "c", '"_c', { desc = "Change without copying" })
+vim.keymap.set({ "n", "v" }, "C", '"_C', { desc = "Change to end of line without copying" })
+vim.keymap.set("n", "cc", '"_cc', { desc = "Change line without copying" })
+vim.keymap.set({ "n", "v" }, "x", '"_x', { desc = "Delete character without copying" })
+vim.keymap.set({ "n", "v" }, "X", '"_X', { desc = "Delete character before cursor without copying" })
+vim.keymap.set({ "n", "v" }, "s", '"_s', { desc = "Substitute without copying" })
+
 -- [[ Basic Autocommands ]]
 --  See `:help lua-guide-autocommands`
 
--- Highlight when yanking (copying) text
+-- Highlight when yanking (copying) text and copy explicit yanks to system clipboard
 --  Try it with `yap` in normal mode
 --  See `:help vim.hl.on_yank()`
 vim.api.nvim_create_autocmd("TextYankPost", {
@@ -131,6 +141,10 @@ vim.api.nvim_create_autocmd("TextYankPost", {
 	group = vim.api.nvim_create_augroup("kickstart-highlight-yank", { clear = true }),
 	callback = function()
 		vim.hl.on_yank()
+		-- Copy to system clipboard only if it was a yank operation (not delete/change)
+		if vim.v.event.operator == "y" then
+			vim.fn.setreg("+", vim.fn.getreg('"'))
+		end
 	end,
 })
 
@@ -762,6 +776,12 @@ require("lazy").setup({
 			vim.api.nvim_create_user_command("PeekOpen", require("peek").open, {})
 			vim.api.nvim_create_user_command("PeekClose", require("peek").close, {})
 		end,
+	},
+
+	-- Code minimap and scrollbar
+	{
+		"lewis6991/satellite.nvim",
+		opts = {},
 	},
 
 	-- LLM support
