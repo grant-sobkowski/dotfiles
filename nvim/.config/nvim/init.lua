@@ -148,6 +148,36 @@ vim.api.nvim_create_autocmd("TextYankPost", {
 	end,
 })
 
+-- Auto-detect and activate .venv for Python files
+vim.api.nvim_create_autocmd("FileType", {
+	pattern = "python",
+	group = vim.api.nvim_create_augroup("python-venv", { clear = true }),
+	callback = function()
+		-- Find .venv in current directory or parents
+		local function find_venv(path)
+			local venv_dir = path .. "/.venv"
+			if vim.fn.isdirectory(venv_dir) == 1 then
+				return venv_dir
+			end
+			local parent = vim.fn.fnamemodify(path, ":h")
+			if parent == path then -- reached root
+				return nil
+			end
+			return find_venv(parent)
+		end
+
+		local venv = find_venv(vim.fn.getcwd())
+		if venv then
+			-- Set environment variables for terminal commands
+			vim.env.VIRTUAL_ENV = venv
+			vim.env.PATH = venv .. "/bin:" .. vim.env.PATH
+
+			-- Set python3 host for Neovim plugins
+			vim.g.python3_host_prog = venv .. "/bin/python"
+		end
+	end,
+})
+
 -- [[ Install `lazy.nvim` plugin manager ]]
 --    See `:help lazy.nvim.txt` or https://github.com/folke/lazy.nvim for more info
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
@@ -561,7 +591,40 @@ require("lazy").setup({
 			local servers = {
 				-- clangd = {},
 				-- gopls = {},
-				-- pyright = {},
+				pyright = {
+					settings = {
+						python = {
+							analysis = {
+								autoSearchPaths = true,
+								useLibraryCodeForTypes = true,
+								diagnosticMode = "workspace",
+							},
+						},
+					},
+					before_init = function(_, config)
+						-- Search for .venv in current directory and parent directories
+						local function find_venv(path)
+							local venv_path = path .. "/.venv/bin/python"
+							if vim.fn.filereadable(venv_path) == 1 then
+								return venv_path
+							end
+							local parent = vim.fn.fnamemodify(path, ":h")
+							if parent == path then -- reached root
+								return nil
+							end
+							return find_venv(parent)
+						end
+
+						-- Start search from current buffer's directory or cwd
+						local start_path = vim.fn.getcwd()
+						local venv_python = find_venv(start_path)
+
+						if venv_python then
+							config.settings.python.pythonPath = venv_python
+							vim.notify("Using venv: " .. venv_python, vim.log.levels.INFO, { timeout = 1000 })
+						end
+					end,
+				},
 				-- rust_analyzer = {},
 				-- ... etc. See `:help lspconfig-all` for a list of all the pre-configured LSPs
 
@@ -708,7 +771,7 @@ require("lazy").setup({
 				-- <c-k>: Toggle signature help
 				--
 				-- See :h blink-cmp-config-keymap for defining your own keymap
-				preset = "default",
+				preset = "super-tab",
 
 				-- For more advanced Luasnip keymaps (e.g. selecting choice nodes, expansion) see:
 				--    https://github.com/L3MON4D3/LuaSnip?tab=readme-ov-file#keymaps
@@ -884,6 +947,23 @@ require("lazy").setup({
 			---@diagnostic disable-next-line: duplicate-set-field
 			statusline.section_location = function()
 				return "%2l:%-2v"
+			end
+
+			-- Add Python venv indicator to statusline
+			---@diagnostic disable-next-line: duplicate-set-field
+			statusline.section_filename = function()
+				local filename = vim.fn.expand("%:t")
+				if filename == "" then
+					filename = "[No Name]"
+				end
+
+				-- Add venv indicator for Python files
+				if vim.bo.filetype == "python" and vim.env.VIRTUAL_ENV then
+					local venv_name = vim.fn.fnamemodify(vim.env.VIRTUAL_ENV, ":t")
+					return string.format("%s [%s]", filename, venv_name)
+				end
+
+				return filename
 			end
 
 			-- ... and there is more!
