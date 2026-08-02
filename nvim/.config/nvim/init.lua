@@ -120,9 +120,10 @@ vim.keymap.set("n", "<C-k>", "<C-w><C-k>", { desc = "Move focus to the upper win
 -- vim.keymap.set("n", "<C-S-k>", "<C-w>K", { desc = "Move window to the upper" })
 
 -- Delete operations use black hole register (don't copy anywhere)
-vim.keymap.set({ "n", "v" }, "d", '"_d', { desc = "Delete without copying" })
+vim.keymap.set("n", "d", '"_d', { desc = "Delete without copying" })
+vim.keymap.set("v", "d", '""d', { desc = "Delete selection to unnamed register" })
 vim.keymap.set({ "n", "v" }, "D", '"_D', { desc = "Delete to end of line without copying" })
-vim.keymap.set("n", "dd", '"_dd', { desc = "Delete line without copying" })
+vim.keymap.set("n", "dd", '"dd', { desc = "Delete line to unnamed register" })
 vim.keymap.set({ "n", "v" }, "c", '"_c', { desc = "Change without copying" })
 vim.keymap.set({ "n", "v" }, "C", '"_C', { desc = "Change to end of line without copying" })
 vim.keymap.set("n", "cc", '"_cc', { desc = "Change line without copying" })
