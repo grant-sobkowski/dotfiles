@@ -14,4 +14,6 @@ function y() {
 	rm -f -- "$tmp"
 }
 
+alias vim="nvim"
+
 source ~/.jfrog.sh
