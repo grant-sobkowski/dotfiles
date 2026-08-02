@@ -15,5 +15,6 @@ function y() {
 }
 
 alias vim="nvim"
+alias nvim="nvim -c 'Neotree show'"
 
-source ~/.jfrog.sh
+source ~/.auth.sh
