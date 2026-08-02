@@ -22,4 +22,13 @@ return {
       },
     },
   },
+  config = function(_, opts)
+    require('neo-tree').setup(opts)
+    vim.api.nvim_create_autocmd('VimEnter', {
+      once = true,
+      callback = function()
+        require('neo-tree.command').execute { action = 'show' }
+      end,
+    })
+  end,
 }
