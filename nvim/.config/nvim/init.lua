@@ -123,7 +123,7 @@ vim.keymap.set("n", "<C-k>", "<C-w><C-k>", { desc = "Move focus to the upper win
 vim.keymap.set("n", "d", '"_d', { desc = "Delete without copying" })
 vim.keymap.set("v", "d", '""d', { desc = "Delete selection to unnamed register" })
 vim.keymap.set({ "n", "v" }, "D", '"_D', { desc = "Delete to end of line without copying" })
-vim.keymap.set("n", "dd", '"dd', { desc = "Delete line to unnamed register" })
+vim.keymap.set("n", "dd", '""dd', { desc = "Delete line to unnamed register" })
 vim.keymap.set({ "n", "v" }, "c", '"_c', { desc = "Change without copying" })
 vim.keymap.set({ "n", "v" }, "C", '"_C', { desc = "Change to end of line without copying" })
 vim.keymap.set("n", "cc", '"_cc', { desc = "Change line without copying" })
@@ -592,42 +592,44 @@ require("lazy").setup({
 			local servers = {
 				-- clangd = {},
 				-- gopls = {},
-				pyright = {
-					settings = {
-						python = {
-							analysis = {
-								autoSearchPaths = true,
-								useLibraryCodeForTypes = true,
-								diagnosticMode = "workspace",
-							},
-						},
-					},
-					before_init = function(_, config)
-						-- Search for .venv in current directory and parent directories
-						local function find_venv(path)
-							local venv_path = path .. "/.venv/bin/python"
-							if vim.fn.filereadable(venv_path) == 1 then
-								return venv_path
-							end
-							local parent = vim.fn.fnamemodify(path, ":h")
-							if parent == path then -- reached root
-								return nil
-							end
-							return find_venv(parent)
-						end
-
-						-- Start search from current buffer's directory or cwd
-						local start_path = vim.fn.getcwd()
-						local venv_python = find_venv(start_path)
-
-						if venv_python then
-							config.settings.python.pythonPath = venv_python
-							vim.notify("Using venv: " .. venv_python, vim.log.levels.INFO, { timeout = 1000 })
-						end
-					end,
-				},
+				-- pyright = {
+				-- 	settings = {
+				-- 		python = {
+				-- 			analysis = {
+				-- 				autoSearchPaths = true,
+				-- 				useLibraryCodeForTypes = true,
+				-- 				diagnosticMode = "workspace",
+				-- 			},
+				-- 		},
+				-- 	},
+				-- 	before_init = function(_, config)
+				-- 		-- Search for .venv in current directory and parent directories
+				-- 		local function find_venv(path)
+				-- 			local venv_path = path .. "/.venv/bin/python"
+				-- 			if vim.fn.filereadable(venv_path) == 1 then
+				-- 				return venv_path
+				-- 			end
+				-- 			local parent = vim.fn.fnamemodify(path, ":h")
+				-- 			if parent == path then -- reached root
+				-- 				return nil
+				-- 			end
+				-- 			return find_venv(parent)
+				-- 		end
+				--
+				-- 		-- Start search from current buffer's directory or cwd
+				-- 		local start_path = vim.fn.getcwd()
+				-- 		local venv_python = find_venv(start_path)
+				--
+				-- 		if venv_python then
+				-- 			config.settings.python.pythonPath = venv_python
+				-- 			vim.notify("Using venv: " .. venv_python, vim.log.levels.INFO, { timeout = 1000 })
+				-- 		end
+				-- 	end,
+				-- },
 				-- rust_analyzer = {},
 				-- ... etc. See `:help lspconfig-all` for a list of all the pre-configured LSPs
+
+				ruff = {},
 
 				lua_ls = {
 					-- cmd = { ... },
@@ -653,6 +655,7 @@ require("lazy").setup({
 			local ensure_installed = vim.tbl_keys(servers or {})
 			vim.list_extend(ensure_installed, {
 				"stylua", -- Used to format Lua code
+				"mypy", -- Used to type-check Python code
 			})
 			require("mason-tool-installer").setup({ ensure_installed = ensure_installed })
 
@@ -1010,16 +1013,16 @@ require("lazy").setup({
 	--
 	-- require 'kickstart.plugins.debug',
 	-- require 'kickstart.plugins.indent_line',
-	-- require 'kickstart.plugins.lint',
+	require 'kickstart.plugins.lint',
 	-- require 'kickstart.plugins.autopairs',
-	require 'kickstart.plugins.neo-tree',
+	require("kickstart.plugins.neo-tree"),
 	-- require 'kickstart.plugins.gitsigns', -- adds gitsigns recommend keymaps
 
 	-- NOTE: The import below can automatically add your own plugins, configuration, etc from `lua/custom/plugins/*.lua`
 	--    This is the easiest way to modularize your config.
 	--
 	--  Uncomment the following line and add your plugins to `lua/custom/plugins/*.lua` to get going.
-	{ import = 'custom.plugins' },
+	{ import = "custom.plugins" },
 }, {
 	ui = {
 		-- If you are using a Nerd Font: set icons to an empty table which will use the
