@@ -9,6 +9,25 @@ return {
         python = { 'mypy' },
       }
 
+      -- Point mypy at the project's .venv so it can resolve installed packages
+      local function find_venv_python(path)
+        local venv_python = path .. '/.venv/bin/python'
+        if vim.fn.filereadable(venv_python) == 1 then
+          return venv_python
+        end
+        local parent = vim.fn.fnamemodify(path, ':h')
+        if parent == path then
+          return nil
+        end
+        return find_venv_python(parent)
+      end
+
+      lint.linters.mypy.args = vim.list_extend(vim.deepcopy(lint.linters.mypy.args), {
+        function()
+          return '--python-executable=' .. (find_venv_python(vim.fn.getcwd()) or vim.fn.exepath 'python3')
+        end,
+      })
+
       -- To allow other plugins to add linters to require('lint').linters_by_ft,
       -- instead set linters_by_ft like this:
       -- lint.linters_by_ft = lint.linters_by_ft or {}

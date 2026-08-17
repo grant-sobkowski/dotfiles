@@ -22,4 +22,19 @@ return {
       },
     },
   },
+  init = function()
+    -- Called via `nvim -c NeotreeOnStartup` to show the sidebar on launch.
+    -- Deferred past VimEnter so it doesn't race with the dashboard plugin
+    -- for the initial window.
+    vim.api.nvim_create_user_command('NeotreeOnStartup', function()
+      vim.api.nvim_create_autocmd('VimEnter', {
+        once = true,
+        callback = function()
+          vim.defer_fn(function()
+            require('neo-tree.command').execute { action = 'show' }
+          end, 50)
+        end,
+      })
+    end, {})
+  end,
 }

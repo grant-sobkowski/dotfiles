@@ -545,6 +545,7 @@ require("lazy").setup({
 						client
 						and client_supports_method(client, vim.lsp.protocol.Methods.textDocument_inlayHint, event.buf)
 					then
+						vim.lsp.inlay_hint.enable(true, { bufnr = event.buf })
 						map("<leader>th", function()
 							vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled({ bufnr = event.buf }))
 						end, "[T]oggle Inlay [H]ints")
@@ -556,7 +557,7 @@ require("lazy").setup({
 			-- See :help vim.diagnostic.Opts
 			vim.diagnostic.config({
 				severity_sort = true,
-				float = { border = "rounded", source = "if_many" },
+				float = { border = "rounded", source = "always" },
 				underline = { severity = vim.diagnostic.severity.ERROR },
 				signs = vim.g.have_nerd_font and {
 					text = {
@@ -567,7 +568,7 @@ require("lazy").setup({
 					},
 				} or {},
 				virtual_text = {
-					source = "if_many",
+					source = "always",
 					spacing = 2,
 					format = function(diagnostic)
 						local diagnostic_message = {
@@ -592,40 +593,47 @@ require("lazy").setup({
 			local servers = {
 				-- clangd = {},
 				-- gopls = {},
-				-- pyright = {
-				-- 	settings = {
-				-- 		python = {
-				-- 			analysis = {
-				-- 				autoSearchPaths = true,
-				-- 				useLibraryCodeForTypes = true,
-				-- 				diagnosticMode = "workspace",
-				-- 			},
-				-- 		},
-				-- 	},
-				-- 	before_init = function(_, config)
-				-- 		-- Search for .venv in current directory and parent directories
-				-- 		local function find_venv(path)
-				-- 			local venv_path = path .. "/.venv/bin/python"
-				-- 			if vim.fn.filereadable(venv_path) == 1 then
-				-- 				return venv_path
-				-- 			end
-				-- 			local parent = vim.fn.fnamemodify(path, ":h")
-				-- 			if parent == path then -- reached root
-				-- 				return nil
-				-- 			end
-				-- 			return find_venv(parent)
-				-- 		end
-				--
-				-- 		-- Start search from current buffer's directory or cwd
-				-- 		local start_path = vim.fn.getcwd()
-				-- 		local venv_python = find_venv(start_path)
-				--
-				-- 		if venv_python then
-				-- 			config.settings.python.pythonPath = venv_python
-				-- 			vim.notify("Using venv: " .. venv_python, vim.log.levels.INFO, { timeout = 1000 })
-				-- 		end
-				-- 	end,
-				-- },
+				pyright = {
+					settings = {
+						python = {
+							analysis = {
+								autoSearchPaths = true,
+								useLibraryCodeForTypes = true,
+								diagnosticMode = "workspace",
+								typeCheckingMode = "off",
+								diagnosticSeverityOverrides = {
+									reportUnusedImport = "none",
+									reportUnusedVariable = "none",
+									reportDuplicateImport = "none",
+									reportWildcardImportFromLibrary = "none",
+								},
+							},
+						},
+					},
+					before_init = function(_, config)
+						-- Search for .venv in current directory and parent directories
+						local function find_venv(path)
+							local venv_path = path .. "/.venv/bin/python"
+							if vim.fn.filereadable(venv_path) == 1 then
+								return venv_path
+							end
+							local parent = vim.fn.fnamemodify(path, ":h")
+							if parent == path then -- reached root
+								return nil
+							end
+							return find_venv(parent)
+						end
+
+						-- Start search from current buffer's directory or cwd
+						local start_path = vim.fn.getcwd()
+						local venv_python = find_venv(start_path)
+
+						if venv_python then
+							config.settings.python.pythonPath = venv_python
+							vim.notify("Using venv: " .. venv_python, vim.log.levels.INFO, { timeout = 1000 })
+						end
+					end,
+				},
 				-- rust_analyzer = {},
 				-- ... etc. See `:help lspconfig-all` for a list of all the pre-configured LSPs
 

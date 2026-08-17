@@ -15,6 +15,6 @@ function y() {
 }
 
 alias vim="nvim"
-alias nvim="nvim -c 'Neotree show'"
+alias nvim="nvim -c NeotreeOnStartup"
 
 source ~/.auth.sh
