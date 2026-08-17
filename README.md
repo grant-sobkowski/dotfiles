@@ -2,6 +2,13 @@
 
 This is my collection of dotfiles, there are many dotfiles like them - but these are my own.
 
+## Launching nvim
+
+```sh
+# Launch with file preview
+alias nvim="nvim -c NeotreeOnStartup"
+```
+
 ## Use dotfiles with stow
 
 ```sh
